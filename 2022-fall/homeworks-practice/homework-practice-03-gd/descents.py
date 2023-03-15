@@ -21,6 +21,7 @@ class LearningRate:
         """
         self.iteration += 1
         return self.lambda_ * (self.s0 / (self.s0 + self.iteration)) ** self.p
+    
 
 
 class LossFunction(Enum):
@@ -46,7 +47,7 @@ class BaseDescent:
         self.loss_function: LossFunction = loss_function
 
     def step(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        return self.update_weights(self.calc_gradient(x, y))
+        return self.update_weights(self.calc_-(x, y))
 
     def update_weights(self, gradient: np.ndarray) -> np.ndarray:
         """
@@ -74,6 +75,8 @@ class BaseDescent:
         :param y: targets array
         :return: loss: float
         """
+        self.loss_function.MSE = (1/len(y))*(y-x@self.w).T@(y-x@self.w)
+        return self.loss_function.MSE
         # TODO: implement loss calculation function
         raise NotImplementedError('BaseDescent calc_loss function not implemented')
 
@@ -83,6 +86,7 @@ class BaseDescent:
         :param x: features array
         :return: prediction: np.ndarray
         """
+        return x@self.w
         # TODO: implement prediction function
         raise NotImplementedError('BaseDescent predict function not implemented')
 
@@ -96,10 +100,12 @@ class VanillaGradientDescent(BaseDescent):
         """
         :return: weight difference (w_{k + 1} - w_k): np.ndarray
         """
+        return -self.lr()*gradient
         # TODO: implement updating weights function
         raise NotImplementedError('VanillaGradientDescent update_weights function not implemented')
 
     def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        return (2/len(y))*x.T@(x@self.w-y)
         # TODO: implement calculating gradient function
         raise NotImplementedError('VanillaGradientDescent calc_gradient function not implemented')
 
@@ -118,6 +124,10 @@ class StochasticDescent(VanillaGradientDescent):
         self.batch_size = batch_size
 
     def calc_gradient(self, x: np.ndarray, y: np.ndarray) -> np.ndarray:
+
+        batch_indexes = np.random.randint(0,x.shape[0],self.batch_size) #indexes
+
+        return (1/self.batch_size)*sum(2*(x[batch_indexes].T@(x[batch_indexes]@self.w[batch_indexes]-y[batch_indexes])))
         # TODO: implement calculating gradient function
         raise NotImplementedError('StochasticDescent calc_gradient function not implemented')
 
@@ -137,6 +147,7 @@ class MomentumDescent(VanillaGradientDescent):
         """
         :return: weight difference (w_{k + 1} - w_k): np.ndarray
         """
+        return self.alpha*self.h+self.lr()*gradient
         # TODO: implement updating weights function
         raise NotImplementedError('MomentumDescent update_weights function not implemented')
 
